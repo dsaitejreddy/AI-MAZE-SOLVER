@@ -1,0 +1,76 @@
+/* BACKGROUND */
+body {
+    margin: 0;
+    background: radial-gradient(circle at top, #0f172a, #020617);
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+/* TITLE */
+h1 {
+    margin: 15px;
+    color: #00ffd5;
+    text-shadow: 0 0 15px #00ffd5;
+}
+
+/* CANVAS (GRID BOX) */
+canvas {
+    display: block;
+    margin: 20px auto;
+    border: 3px solid #00ffd5;
+    background: #0b1220;
+    box-shadow: 0 0 25px #00ffd5;
+    border-radius: 15px;
+}
+
+/* PANEL */
+.panel {
+    width: 80%;
+    margin: auto;
+    text-align: left;
+}
+
+/* SECTION HEADINGS */
+h2 {
+    color: orange;
+    margin-top: 20px;
+    text-shadow: 0 0 8px orange;
+}
+
+/* BUTTON GROUP */
+.btn-group {
+    margin: 10px 0;
+}
+
+/* BUTTON STYLE */
+button {
+    margin: 5px;
+    padding: 10px 16px;
+    background: #1e293b;
+    color: #00ffd5;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+/* HOVER EFFECT */
+button:hover {
+    background: #00ffd5;
+    color: black;
+    box-shadow: 0 0 15px #00ffd5;
+}
+
+/* ACTIVE CLICK EFFECT */
+button:active {
+    transform: scale(0.95);
+}
+
+/* OPTIONAL: SECTION SPACING */
+.panel h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
