@@ -6,49 +6,35 @@
 </head>
 <body>
 
-<h1>🧠 AI Maze Solver</h1>
+<h1>🧠 AI Maze Solver (Comparison)</h1>
 
-<canvas id="grid"></canvas>
+<div class="container">
 
-<div class="panel">
-
-    <h2>🧱 Build Mode</h2>
-    <div class="btn-group">
-        <button onclick="setMode('wall')">Walls</button>
-        <button onclick="setMode('erase')">Erase</button>
-        <button onclick="setMode('start')">Set Start</button>
-        <button onclick="setMode('end')">Set End</button>
+    <div class="box">
+        <h2 class="bfs">BFS</h2>
+        <canvas id="bfsCanvas"></canvas>
     </div>
 
-    <h2>🤖 Algorithms</h2>
-    <div class="btn-group">
-        <button onclick="runBFS()">BFS</button>
-        <button onclick="runAStar()">A*</button>
-        <button onclick="runDFS()">DFS</button>
+    <div class="box">
+        <h2 class="dfs">DFS</h2>
+        <canvas id="dfsCanvas"></canvas>
     </div>
 
-    <h2>🎯 Generate Maze</h2>
-    <div class="btn-group">
-        <button onclick="generateMaze(0.2)">Easy</button>
-        <button onclick="generateMaze(0.4)">Medium</button>
-        <button onclick="generateMaze(0.6)">Hard</button>
-    </div>
-
-    <h2>⚡ Speed</h2>
-    <div class="btn-group">
-        <button onclick="setSpeed(5)">Fast</button>
-        <button onclick="setSpeed(20)">Medium</button>
-        <button onclick="setSpeed(50)">Slow</button>
-    </div>
-
-    <h2>⚙️ Options</h2>
-    <div class="btn-group">
-        <button onclick="toggleExploration()">Toggle Exploration</button>
-        <button onclick="clearGrid()">Clear</button>
+    <div class="box">
+        <h2 class="astar">A*</h2>
+        <canvas id="astarCanvas"></canvas>
     </div>
 
 </div>
 
+<div class="controls">
+    <button onclick="setMode('start')">Set Start</button>
+    <button onclick="setMode('end')">Set End</button>
+    <button onclick="runAll()">Run All</button>
+    <button onclick="resetAll()">Reset</button>
+</div>
+
 <script src="script.js"></script>
+
 </body>
 </html>

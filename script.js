@@ -1,186 +1,179 @@
-const canvas = document.getElementById("grid");
-const ctx = canvas.getContext("2d");
+const rows = 20, cols = 20, size = 20;
 
-canvas.width = 500;
-canvas.height = 500;
+const bfsCanvas = document.getElementById("bfsCanvas");
+const dfsCanvas = document.getElementById("dfsCanvas");
+const astarCanvas = document.getElementById("astarCanvas");
 
-const rows = 20;
-const cols = 20;
-const size = canvas.width / cols;
+[bfsCanvas, dfsCanvas, astarCanvas].forEach(c => {
+    c.width = cols * size;
+    c.height = rows * size;
+});
 
-let grid = Array.from({ length: rows }, () => Array(cols).fill(0));
+const bfsCtx = bfsCanvas.getContext("2d");
+const dfsCtx = dfsCanvas.getContext("2d");
+const astarCtx = astarCanvas.getContext("2d");
+
 let mode = "";
 let start = null;
 let end = null;
-let speed = 20;
 
-// MODE
-function setMode(m) { mode = m; }
+function createMaze() {
+return [
+[0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+[1,1,0,1,0,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0],
+[0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0],
+[0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1,0],
+[0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,1,0],
+[0,1,0,1,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,0],
+[0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0],
+[0,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0],
+[0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,0],
+[0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0],
+[0,1,0,1,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1,0],
+[0,1,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0],
+[0,1,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0],
+[0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0,1,0],
+[0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0],
+[0,1,0,0,1,0,0,0,0,0,0,0,1,0,1,0,1,0,1,0],
+[0,1,0,0,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0],
+[0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0],
+[0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0]
+];
+}
 
-// CLICK
-canvas.addEventListener("click", e => {
-    const rect = canvas.getBoundingClientRect();
-    let x = Math.floor((e.clientX - rect.left) / size);
-    let y = Math.floor((e.clientY - rect.top) / size);
+let maze = createMaze();
 
-    if (mode === "wall") grid[y][x] = 1;
-    else if (mode === "erase") grid[y][x] = 0;
-    else if (mode === "start") start = { x, y };
-    else if (mode === "end") end = { x, y };
+function draw(ctx) {
+    ctx.clearRect(0,0,cols*size,rows*size);
 
-    draw();
+    for(let i=0;i<rows;i++){
+        for(let j=0;j<cols;j++){
+            if(maze[i][j]){
+                ctx.fillStyle="#1f2937";
+                ctx.fillRect(j*size,i*size,size,size);
+            }
+            ctx.strokeRect(j*size,i*size,size,size);
+        }
+    }
+
+    if(start){
+        ctx.fillStyle="red";
+        ctx.fillRect(start.x*size,start.y*size,size,size);
+    }
+
+    if(end){
+        ctx.fillStyle="lime";
+        ctx.fillRect(end.x*size,end.y*size,size,size);
+    }
+}
+
+[bfsCanvas, dfsCanvas, astarCanvas].forEach(canvas=>{
+    canvas.addEventListener("click",e=>{
+        let rect=canvas.getBoundingClientRect();
+        let x=Math.floor((e.clientX-rect.left)/size);
+        let y=Math.floor((e.clientY-rect.top)/size);
+
+        if(mode==="start") start={x,y};
+        if(mode==="end") end={x,y};
+
+        drawAll();
+    });
 });
 
-// DRAW
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function setMode(m){ mode=m; }
 
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-
-            if (grid[i][j]) {
-                ctx.fillStyle = "white";
-                ctx.fillRect(j * size, i * size, size, size);
-            }
-
-            if (start && start.x === j && start.y === i) {
-                ctx.fillStyle = "green";
-                ctx.fillRect(j * size, i * size, size, size);
-            }
-
-            if (end && end.x === j && end.y === i) {
-                ctx.fillStyle = "red";
-                ctx.fillRect(j * size, i * size, size, size);
-            }
-
-            ctx.strokeStyle = "#222";
-            ctx.strokeRect(j * size, i * size, size, size);
-        }
-    }
+function drawAll(){
+    draw(bfsCtx);
+    draw(dfsCtx);
+    draw(astarCtx);
 }
 
-// PATH DRAW
-function drawPath(parent) {
-    let cur = end;
-    while (cur) {
-        ctx.fillStyle = "yellow";
-        ctx.fillRect(cur.x * size, cur.y * size, size, size);
-        cur = parent[`${cur.x},${cur.y}`];
-    }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function runBFS(){
+let q=[start],vis=new Set();
+while(q.length){
+let cur=q.shift();
+let key=`${cur.x},${cur.y}`;
+if(vis.has(key)) continue;
+vis.add(key);
+
+bfsCtx.fillStyle="blue";
+bfsCtx.fillRect(cur.x*size,cur.y*size,size,size);
+await sleep(5);
+
+if(cur.x===end.x&&cur.y===end.y) return;
+
+[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+let nx=cur.x+dx,ny=cur.y+dy;
+if(nx>=0&&ny>=0&&nx<cols&&ny<rows&&!maze[ny][nx]){
+q.push({x:nx,y:ny});
+}
+});
+}
 }
 
-// BFS
-function runBFS() {
-    if (!start || !end) return alert("Set Start & End");
+async function runDFS(){
+let stack=[start],vis=new Set();
+while(stack.length){
+let cur=stack.pop();
+let key=`${cur.x},${cur.y}`;
+if(vis.has(key)) continue;
+vis.add(key);
 
-    let q = [start], vis = new Set(), parent = {};
+dfsCtx.fillStyle="green";
+dfsCtx.fillRect(cur.x*size,cur.y*size,size,size);
+await sleep(5);
 
-    while (q.length) {
-        let cur = q.shift();
-        let key = `${cur.x},${cur.y}`;
-        if (vis.has(key)) continue;
-        vis.add(key);
+if(cur.x===end.x&&cur.y===end.y) return;
 
-        if (cur.x === end.x && cur.y === end.y) {
-            draw(); drawPath(parent); return;
-        }
-
-        [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
-            let nx = cur.x+dx, ny = cur.y+dy;
-            if(nx>=0&&ny>=0&&nx<cols&&ny<rows&&!grid[ny][nx]){
-                let k=`${nx},${ny}`;
-                if(!vis.has(k)){
-                    q.push({x:nx,y:ny});
-                    parent[k]=cur;
-                }
-            }
-        });
-    }
+[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+let nx=cur.x+dx,ny=cur.y+dy;
+if(nx>=0&&ny>=0&&nx<cols&&ny<rows&&!maze[ny][nx]){
+stack.push({x:nx,y:ny});
+}
+});
+}
 }
 
-// DFS
-function runDFS() {
-    if (!start || !end) return alert("Set Start & End");
+async function runAStar(){
+let open=[start],vis=new Set();
+while(open.length){
+let cur=open.shift();
+let key=`${cur.x},${cur.y}`;
+if(vis.has(key)) continue;
+vis.add(key);
 
-    let s = [start], vis = new Set(), parent = {};
+astarCtx.fillStyle="purple";
+astarCtx.fillRect(cur.x*size,cur.y*size,size,size);
+await sleep(5);
 
-    while (s.length) {
-        let cur = s.pop();
-        let key = `${cur.x},${cur.y}`;
-        if (vis.has(key)) continue;
-        vis.add(key);
+if(cur.x===end.x&&cur.y===end.y) return;
 
-        if (cur.x === end.x && cur.y === end.y) {
-            draw(); drawPath(parent); return;
-        }
-
-        [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
-            let nx=cur.x+dx, ny=cur.y+dy;
-            if(nx>=0&&ny>=0&&nx<cols&&ny<rows&&!grid[ny][nx]){
-                let k=`${nx},${ny}`;
-                if(!vis.has(k)){
-                    s.push({x:nx,y:ny});
-                    parent[k]=cur;
-                }
-            }
-        });
-    }
+[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+let nx=cur.x+dx,ny=cur.y+dy;
+if(nx>=0&&ny>=0&&nx<cols&&ny<rows&&!maze[ny][nx]){
+open.push({x:nx,y:ny});
+}
+});
+}
 }
 
-// A*
-function runAStar() {
-    if (!start || !end) return alert("Set Start & End");
-
-    let open=[start], g={}, f={}, parent={};
-    g[`${start.x},${start.y}`]=0;
-
-    while(open.length){
-        open.sort((a,b)=> (g[`${a.x},${a.y}`]+heuristic(a,end)) - (g[`${b.x},${b.y}`]+heuristic(b,end)));
-        let cur=open.shift();
-
-        if(cur.x===end.x&&cur.y===end.y){
-            draw(); drawPath(parent); return;
-        }
-
-        [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
-            let nx=cur.x+dx, ny=cur.y+dy;
-            if(nx<0||ny<0||nx>=cols||ny>=rows||grid[ny][nx]) return;
-
-            let k=`${nx},${ny}`;
-            let temp=g[`${cur.x},${cur.y}`]+1;
-
-            if(g[k]===undefined||temp<g[k]){
-                g[k]=temp;
-                parent[k]=cur;
-                open.push({x:nx,y:ny});
-            }
-        });
-    }
+function runAll(){
+if(!start||!end){
+alert("Select Start and End");
+return;
+}
+runBFS();
+runDFS();
+runAStar();
 }
 
-function heuristic(a,b){
-    return Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+function resetAll(){
+start=null;
+end=null;
+drawAll();
 }
 
-// MAZE
-function generateMaze(density){
-    grid = grid.map(row => row.map(()=> Math.random()<density?1:0));
-    draw();
-}
-
-// SPEED
-function setSpeed(s){ speed=s; }
-
-// TOGGLE (dummy)
-function toggleExploration(){
-    alert("Exploration toggle added!");
-}
-
-// CLEAR
-function clearGrid(){
-    grid = Array.from({ length: rows }, () => Array(cols).fill(0));
-    start=null; end=null;
-    draw();
-}
-
-draw();
+drawAll();
